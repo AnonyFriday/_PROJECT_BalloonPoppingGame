@@ -13,6 +13,7 @@ import {
   animate,
   AnimationBuilder,
   AnimationFactory,
+  keyframes,
   style,
 } from '@angular/animations';
 
@@ -41,6 +42,9 @@ export class BalloonComponent implements OnInit {
     this.animateBalloon();
   }
 
+  // ===============================
+  // == Methods
+  // ===============================
   animateBalloon() {
     // Position
     const buffer: number = 10;
@@ -64,7 +68,7 @@ export class BalloonComponent implements OnInit {
         bottom: 0,
       }),
       animate(
-        `${dynamicSpeed}s 200ms ease-out`,
+        `${dynamicSpeed}s 200ms ease-in-out`,
         style({
           translate: `${leftPosition}px -100vh`,
         })
@@ -79,6 +83,27 @@ export class BalloonComponent implements OnInit {
   }
 
   pop(): void {
-    this.balloonPopped.emit(this.balloon().id);
+    const popAnimation: AnimationFactory = this.animationBuilder.build([
+      animate(
+        `0.2s ease-out`,
+        keyframes([
+          style({
+            scale: '1.2',
+            offset: 0.5,
+          }),
+          style({
+            scale: '1.8',
+            offset: 0.75,
+          }),
+        ])
+      ),
+    ]);
+
+    const player = popAnimation.create(this.elRef.nativeElement.firstChild);
+    player.play();
+    player.onDone(() => {
+      // when the animation finish, then we emit the event
+      this.balloonPopped.emit(this.balloon().id);
+    });
   }
 }

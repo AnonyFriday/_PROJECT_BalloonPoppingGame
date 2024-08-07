@@ -4,21 +4,35 @@
 
 <main role="main">
   <div class="game-container">
-
+    @if (!isGameOver()) {
     <div class="flex gap-4">
       @for (balloon of this.balloons; track balloon.id) {
-      <app-balloon [balloon]="balloon"
-                   (balloonMissed)="balloonMissedHandler($event)"
-                   (balloonPopped)="balloonPoppedHandler($event)"></app-balloon>
+      <app-balloon
+        [balloon]="balloon"
+        (balloonMissed)="balloonMissedHandler($event)"
+        (balloonPopped)="balloonPoppedHandler($event)"
+      ></app-balloon>
       }
     </div>
 
     <div class="text-2xl font-bold flex gap-4">
-      <span>Score: {{score}}</span>
+      <span>Score: {{ score() }}</span>
 
-      @if (missed) {
-      <span>Missed: {{missed}}</span>
+      @if (missed()) {
+      <span>Missed: {{ missed() }}</span>
       }
     </div>
+    } @else {
+    <section class="flex flex-col gap-10">
+      <div class="text-3xl text-center">Game Over</div>
+      <div class="text-2xl font-bold text-center">Score: {{ score() }}</div>
+      <button
+        (click)="startGame()"
+        class="rounded-md px-2 py-1.5 bg-purple-600 uppercase cursor-pointer text-white"
+      >
+        Restart
+      </button>
+    </section>
+    }
   </div>
 </main>
