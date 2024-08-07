@@ -35,7 +35,7 @@ export class BalloonComponent implements OnInit, OnDestroy {
 
   //! ERROR: error occurs on emit event on destroyed animation. Temporarily not used
   // after angular v17.3, just add type-safety
-  readonly balloonMissed = output<string>();
+  // readonly balloonMissed = output<string>();
 
   // before angular v17.3
   @Output() balloonPopped = new EventEmitter<string>();
