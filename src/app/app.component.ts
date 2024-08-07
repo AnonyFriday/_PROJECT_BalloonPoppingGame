@@ -18,4 +18,15 @@ export class AppComponent {
   public balloons: IBalloon[] = new Array(this.balloonsOnScreen)
     .fill(0)
     .map(() => new Balloon());
+  public score: number = 0;
+  public missed: number = 0;
+
+  balloonPoppedHandler(balloonId: string) {
+    this.score++;
+    this.balloons = this.balloons.filter((balloon) => balloon.id !== balloonId);
+  }
+
+  balloonMissedHandler(balloonId: string) {
+    this.missed++;
+  }
 }

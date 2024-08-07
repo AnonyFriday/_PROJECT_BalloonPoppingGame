@@ -1,4 +1,13 @@
-import { Component, ElementRef, inject, input, OnInit } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  inject,
+  input,
+  OnInit,
+  output,
+  Output,
+} from '@angular/core';
 import { IBalloon } from '../../../core/models/balloon/balloon.model';
 import {
   animate,
@@ -22,6 +31,8 @@ export class BalloonComponent implements OnInit {
   balloon = input.required<IBalloon>();
   animationBuilder = inject(AnimationBuilder);
   elRef = inject(ElementRef);
+  @Output() balloonPopped = new EventEmitter<string>(); // before angular v17.3
+  balloonMissed = output<string>(); // after angular v17.3, just add type-safety
 
   // ===============================
   // == Lifecycle
@@ -63,7 +74,11 @@ export class BalloonComponent implements OnInit {
     const player = flyAnimation.create(this.elRef.nativeElement.firstChild);
     player.play();
     player.onDone(() => {
-      console.log('animation finished');
+      this.balloonMissed.emit(this.balloon().id);
     });
+  }
+
+  pop(): void {
+    this.balloonPopped.emit(this.balloon().id);
   }
 }
