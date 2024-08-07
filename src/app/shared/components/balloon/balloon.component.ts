@@ -64,7 +64,7 @@ export class BalloonComponent implements OnInit {
         bottom: 0,
       }),
       animate(
-        `${dynamicSpeed}s 300ms ease-out`,
+        `${dynamicSpeed}s 200ms ease-out`,
         style({
           translate: `${leftPosition}px -100vh`,
         })

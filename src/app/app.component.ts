@@ -23,7 +23,11 @@ export class AppComponent {
 
   balloonPoppedHandler(balloonId: string) {
     this.score++;
+    // popout the balloon
     this.balloons = this.balloons.filter((balloon) => balloon.id !== balloonId);
+
+    // add new balloon
+    this.balloons.push(new Balloon());
   }
 
   balloonMissedHandler(balloonId: string) {
