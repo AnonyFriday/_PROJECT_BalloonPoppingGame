@@ -2,6 +2,7 @@ import {
   Component,
   computed,
   effect,
+  OnDestroy,
   OnInit,
   signal,
   viewChildren,
@@ -17,7 +18,7 @@ import { Balloon, IBalloon } from './core/models/balloon/balloon.model';
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
   // =======================
   // == Fields
   // =======================
@@ -47,6 +48,12 @@ export class AppComponent implements OnInit {
   // =======================
   ngOnInit(): void {
     this.startGame();
+  }
+
+  ngOnDestroy(): void {
+    if (this.createBalloonsOnDemand) {
+      this.createBalloonsOnDemand.destroy();
+    }
   }
 
   // =======================

@@ -4,6 +4,7 @@ import {
   EventEmitter,
   inject,
   input,
+  OnDestroy,
   OnInit,
   output,
   Output,
@@ -13,6 +14,7 @@ import {
   animate,
   AnimationBuilder,
   AnimationFactory,
+  AnimationPlayer,
   keyframes,
   style,
 } from '@angular/animations';
@@ -24,17 +26,28 @@ import {
   templateUrl: './balloon.component.html',
   styleUrl: './balloon.component.scss',
 })
-export class BalloonComponent implements OnInit {
+export class BalloonComponent implements OnInit, OnDestroy {
   // ===============================
   // == Fields
   // ===============================
 
   balloon = input.required<IBalloon>();
-  animationBuilder = inject(AnimationBuilder);
-  elRef = inject(ElementRef);
-  @Output() balloonPopped = new EventEmitter<string>(); // before angular v17.3
-  balloonMissed = output<string>(); // after angular v17.3, just add type-safety
 
+  //! ERROR: error occurs on emit event on destroyed animation. Temporarily not used
+  // after angular v17.3, just add type-safety
+  // readonly balloonMissed = output<string>();
+
+  // before angular v17.3
+  @Output() balloonPopped = new EventEmitter<string>();
+  @Output() balloonMissed = new EventEmitter();
+
+  private flyAnimationPlayer!: AnimationPlayer;
+  private popAnimationPlayer!: AnimationPlayer;
+  // ===============================
+  // == Services
+  // ===============================
+  private readonly elRef = inject(ElementRef);
+  private readonly animationBuilder = inject(AnimationBuilder);
   // ===============================
   // == Lifecycle
   // ===============================
@@ -42,12 +55,26 @@ export class BalloonComponent implements OnInit {
     this.animateBalloon();
   }
 
+  ngOnDestroy(): void {
+    // Stop the animations if the component is destroyed
+    if (this.flyAnimationPlayer) {
+      this.flyAnimationPlayer.destroy();
+    }
+    if (this.popAnimationPlayer) {
+      this.popAnimationPlayer.destroy();
+    }
+  }
+
   // ===============================
   // == Methods
   // ===============================
+
+  /**
+   * Animation attached to the balloon
+   */
   animateBalloon() {
     // Position
-    const buffer: number = 10;
+    const buffer: number = 20;
     const maxRemainingWidth: number =
       window.innerWidth -
       this.elRef.nativeElement.firstChild.clientWidth -
@@ -55,9 +82,9 @@ export class BalloonComponent implements OnInit {
     const leftPosition: number = Math.floor(Math.random() * maxRemainingWidth);
 
     // Speed
-    const minSpeed: number = 5;
-    const maxSpeed: number = 10;
-    const dynamicSpeed: number = minSpeed + Math.random() * maxSpeed; // dynamic speed from 5s to 10s
+    const speedMin: number = 5;
+    const speedVariation: number = 3;
+    const speed: number = speedMin + Math.random() * speedVariation; // dynamic speed from 5s to 8s
 
     const flyAnimation: AnimationFactory = this.animationBuilder.build([
       style({
@@ -68,20 +95,25 @@ export class BalloonComponent implements OnInit {
         bottom: 0,
       }),
       animate(
-        `${dynamicSpeed}s 200ms ease-in-out`,
+        `${speed}s ease-in-out`,
         style({
           translate: `${leftPosition}px -100vh`,
         })
       ),
     ]);
 
-    const player = flyAnimation.create(this.elRef.nativeElement.firstChild);
-    player.play();
-    player.onDone(() => {
+    this.flyAnimationPlayer = flyAnimation.create(
+      this.elRef.nativeElement.firstChild
+    );
+    this.flyAnimationPlayer.play();
+    this.flyAnimationPlayer.onDone(() => {
       this.balloonMissed.emit(this.balloon().id);
     });
   }
 
+  /**
+   * Action to pop the balloon
+   */
   pop(): void {
     const popAnimation: AnimationFactory = this.animationBuilder.build([
       animate(
@@ -92,16 +124,18 @@ export class BalloonComponent implements OnInit {
             offset: 0.5,
           }),
           style({
-            scale: '1.8',
+            scale: '0.8',
             offset: 0.75,
           }),
         ])
       ),
     ]);
 
-    const player = popAnimation.create(this.elRef.nativeElement.firstChild);
-    player.play();
-    player.onDone(() => {
+    this.popAnimationPlayer = popAnimation.create(
+      this.elRef.nativeElement.firstChild
+    );
+    this.popAnimationPlayer.play();
+    this.popAnimationPlayer.onDone(() => {
       // when the animation finish, then we emit the event
       this.balloonPopped.emit(this.balloon().id);
     });
